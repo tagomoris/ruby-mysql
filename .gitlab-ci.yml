@@ -1,0 +1,21 @@
+test:
+  parallel:
+    matrix:
+      - RUBY_VER: ['2.6', '2.7', '3.0', '3.1']
+        MYSQL_VER: ['5.6', '5.7', '8.0']
+  services:
+    - name: mysql:$MYSQL_VER
+      command: ['--local-infile=true', '--max-allowed-packet=100000000', '--innodb-log-files-in-group=10']
+  variables:
+    MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    MYSQL_DATABASE: 'test_for_mysql_ruby'
+  image: ruby:$RUBY_VER
+  script:
+    - bundle install
+    - MYSQL_SERVER=mysql MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD= bundle exec rspec
+
+rubocop:
+  image: ruby:3.1
+  script:
+    - bundle install
+    - bundle exec rubocop
