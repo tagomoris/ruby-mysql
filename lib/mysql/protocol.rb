@@ -140,6 +140,7 @@ class Mysql
     # :WAIT_RESULT :: After query_command(). get_result() is needed.
     # :FIELD       :: After get_result(). retr_fields() is needed.
     # :RESULT      :: After retr_fields(), retr_all_records() is needed.
+    # :CLOSED      :: Connection closed.
 
     # make socket connection to server.
     # @param opts [Hash]
@@ -272,10 +273,11 @@ class Mysql
       get_result if @state == :WAIT_RESULT
       retr_fields if @state == :FIELD
       retr_all_records(RawRecord) if @state == :RESULT
-      synchronize(before: :READY, after: :READY) do
+      synchronize(before: :READY, after: :CLOSED) do
         reset
         write [COM_QUIT].pack("C")
         close
+        @gc_stmt_queue.clear
       end
     end
 
@@ -453,6 +455,7 @@ class Mysql
       synchronize(before: :READY, after: :READY) do
         reset
         write [COM_STMT_CLOSE, stmt_id].pack("CV")
+        @gc_stmt_queue.delete stmt_id
       end
     end
 
@@ -466,7 +469,7 @@ class Mysql
 
     def set_state(st)
       @state = st
-      return unless st == :READY && !@gc_stmt_queue.empty?
+      return if st != :READY || @gc_stmt_queue.empty? || @socket&.closed?
       gc_disabled = GC.disable
       begin
         while (st = @gc_stmt_queue.shift)
