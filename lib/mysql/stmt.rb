@@ -30,8 +30,9 @@ class Mysql
 
     # @private
     # @param [Mysql::Protocol] protocol
-    def initialize(protocol)
+    def initialize(protocol, **opts)
       @protocol = protocol
+      @opts = opts
       @statement_id = nil
       @affected_rows = @insert_id = @server_status = @warning_count = 0
       @sqlstate = "00000"
@@ -62,10 +63,12 @@ class Mysql
     # @return [Mysql::Result] if return_result is true and the query returns result set.
     # @return [nil] if return_results is true and the query does not return result set.
     # @return [self] if return_result is false or block is specified.
-    def execute(*values, return_result: true, yield_null_result: true, bulk_retrieve: true, &block)
+    def execute(*values, **opts, &block)
+      raise ClientError, "Invalid statement handle" unless @statement_id
       raise ClientError, "not prepared" unless @param_count
       raise ClientError, "parameter count mismatch" if values.length != @param_count
       values = values.map{|v| @protocol.charset.convert v}
+      opts = @opts.merge(opts)
       begin
         @sqlstate = "00000"
         @protocol.stmt_execute_command @statement_id, values
@@ -73,15 +76,15 @@ class Mysql
         if block
           while true
             get_result
-            res = store_result(bulk_retrieve: bulk_retrieve)
-            block.call res if res || yield_null_result
+            res = store_result(**opts)
+            block.call res if res || opts.fetch(:yield_null_result, true)
             break unless more_results?
           end
           return self
         end
         get_result
-        return self unless return_result
-        return store_result(bulk_retrieve: bulk_retrieve)
+        return self unless opts.fetch(:return_result, true)
+        return store_result(**opts)
       rescue ServerError => e
         @last_error = e
         @sqlstate = e.sqlstate
@@ -95,10 +98,11 @@ class Mysql
         @protocol.affected_rows, @protocol.insert_id, @protocol.server_status, @protocol.warning_count, @protocol.message
     end
 
-    def store_result(bulk_retrieve: true)
+    def store_result(**opts)
       return nil if @protocol.field_count.nil? || @protocol.field_count == 0
       @fields = @protocol.retr_fields
-      @result = StatementResult.new(@fields, @protocol, bulk_retrieve: bulk_retrieve)
+      opts = @opts.merge(opts)
+      @result = StatementResult.new(@fields, @protocol, **opts)
     end
 
     def more_results?
@@ -109,12 +113,13 @@ class Mysql
     # @return [Mysql::StatementResult] result set of query if return_result is true.
     # @return [true] if return_result is false and result exists.
     # @return [nil] query returns no results or no more results.
-    def next_result(return_result: true)
+    def next_result(**opts)
       return nil unless more_results?
+      opts = @opts.merge(opts)
       @fields = @result = nil
       get_result
-      return self unless return_result
-      return store_result
+      return self unless opts.fetch(:return_result, true)
+      return store_result(**opts)
     rescue ServerError => e
       @last_error = e
       @sqlstate = e.sqlstate
@@ -130,25 +135,25 @@ class Mysql
     end
 
     # @return [Array] current record data
-    def fetch
-      @result.fetch
+    def fetch(**opts)
+      @result.fetch(**opts)
     end
 
     # Return data of current record as Hash.
     # The hash key is field name.
     # @param [Boolean] with_table if true, hash key is "table_name.field_name".
     # @return [Hash] record data
-    def fetch_hash(with_table=nil)
-      @result.fetch_hash with_table
+    def fetch_hash(with_table=nil, **opts)
+      @result.fetch_hash(with_table, **opts)
     end
 
     # Iterate block with record.
     # @yield [Array] record data
     # @return [Mysql::Stmt] self
     # @return [Enumerator] If block is not specified
-    def each(&block)
-      return enum_for(:each) unless block
-      while (rec = fetch)
+    def each(**opts, &block)
+      return enum_for(:each, **opts) unless block
+      while (rec = fetch(*opts))
         block.call rec
       end
       self
@@ -159,9 +164,9 @@ class Mysql
     # @yield [Hash] record data
     # @return [Mysql::Stmt] self
     # @return [Enumerator] If block is not specified
-    def each_hash(with_table=nil, &block)
-      return enum_for(:each_hash, with_table) unless block
-      while (rec = fetch_hash(with_table))
+    def each_hash(with_table=nil, **opts, &block)
+      return enum_for(:each_hash, with_table, **opts) unless block
+      while (rec = fetch_hash(with_table, **opts))
         block.call rec
       end
       self

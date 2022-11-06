@@ -12,7 +12,7 @@ class Mysql
     attr_reader :result
 
     # @param [Array of Mysql::Field] fields
-    def initialize(fields, protocol, record_class)
+    def initialize(fields, protocol, record_class, **opts)
       @fields = fields
       @field_index = 0             # index of field
       @records = []                # all records
@@ -20,6 +20,7 @@ class Mysql
       @fieldname_with_table = nil
       @protocol = protocol
       @record_class = record_class
+      @opts = opts
     end
 
     def retrieve
@@ -39,7 +40,7 @@ class Mysql
     alias num_rows size
 
     # @return [Array] current record data
-    def fetch
+    def fetch(**)
       if @index < @records.size
         @records[@index] = @records[@index].to_a unless @records[@index].is_a? Array
         @index += 1
@@ -57,8 +58,8 @@ class Mysql
     # The hash key is field name.
     # @param [Boolean] with_table if true, hash key is "table_name.field_name".
     # @return [Hash] current record data
-    def fetch_hash(with_table=nil)
-      row = fetch
+    def fetch_hash(with_table=nil, **opts)
+      row = fetch(**opts)
       return nil unless row
       if with_table and @fieldname_with_table.nil?
         @fieldname_with_table = @fields.map{|f| [f.table, f.name].join(".")}
@@ -74,10 +75,10 @@ class Mysql
     # Iterate block with record.
     # @yield [Array] record data
     # @return [self] self. If block is not specified, this returns Enumerator.
-    def each(&block)
+    def each(**opts, &block)
       @index = 0
-      return enum_for(:each) unless block
-      while (rec = fetch)
+      return enum_for(:each, **opts) unless block
+      while (rec = fetch(**opts))
         block.call rec
       end
       self
@@ -87,10 +88,10 @@ class Mysql
     # @param [Boolean] with_table if true, hash key is "table_name.field_name".
     # @yield [Hash] record data
     # @return [self] self. If block is not specified, this returns Enumerator.
-    def each_hash(with_table=nil, &block)
+    def each_hash(with_table=nil, **opts, &block)
       @index = 0
-      return enum_for(:each_hash, with_table) unless block
-      while (rec = fetch_hash(with_table))
+      return enum_for(:each_hash, with_table, **opts) unless block
+      while (rec = fetch_hash(with_table, **opts))
         block.call rec
       end
       self
@@ -132,11 +133,11 @@ class Mysql
     # @param [Array<Mysql::Field>] fields
     # @param [Mysql::Protocol] protocol
     # @param [Boolean] bulk_retrieve
-    def initialize(fields, protocol=nil, bulk_retrieve: true)
-      super fields, protocol, RawRecord
+    def initialize(fields, protocol=nil, **opts)
+      super fields, protocol, RawRecord, **opts
       return unless protocol
       fields.each{|f| f.result = self}  # for calculating max_field
-      retrieve if bulk_retrieve
+      retrieve if @opts.merge(opts).fetch(:bulk_retrieve, true)
     end
 
     # @private
@@ -162,9 +163,9 @@ class Mysql
     # @private
     # @param [Array<Mysql::Field>] fields
     # @param [Mysql::Protocol] protocol
-    def initialize(fields, protocol, bulk_retrieve: true)
-      super fields, protocol, StmtRawRecord
-      retrieve if bulk_retrieve
+    def initialize(fields, protocol, **opts)
+      super fields, protocol, StmtRawRecord, **opts
+      retrieve if @opts.merge(opts).fetch(:bulk_retrieve, true)
     end
   end
 end

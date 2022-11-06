@@ -351,7 +351,8 @@ class Mysql
   # @example
   #  my.query("select 1,NULL,'abc'").fetch  # => [1, nil, "abc"]
   #  my.query("select 1,NULL,'abc'"){|res| res.fetch}
-  def query(str, return_result: true, yield_null_result: true, bulk_retrieve: true, &block)
+  def query(str, **opts, &block)
+    opts = @opts.merge(opts)
     check_connection
     @fields = nil
     begin
@@ -359,15 +360,15 @@ class Mysql
       if block
         while true
           @protocol.get_result
-          res = store_result(bulk_retrieve: bulk_retrieve)
-          block.call res if res || yield_null_result
+          res = store_result(**opts)
+          block.call res if res || opts.fetch(:yield_null_result, true)
           break unless more_results?
         end
         return self
       end
       @protocol.get_result
-      return self unless return_result
-      return store_result(bulk_retrieve: bulk_retrieve)
+      return self unless opts.fetch(:return_result, true)
+      return store_result(**opts)
     rescue ServerError => e
       @last_error = e
       @sqlstate = e.sqlstate
@@ -376,13 +377,13 @@ class Mysql
   end
 
   # Get all data for last query.
-  # @param bulk_retrieve [Boolean]
   # @return [Mysql::Result]
   # @return [nil] if no results
-  def store_result(bulk_retrieve: true)
+  def store_result(**opts)
     return nil if @protocol.field_count.nil? || @protocol.field_count == 0
     @fields = @protocol.retr_fields
-    @result = Result.new(@fields, @protocol, bulk_retrieve: bulk_retrieve)
+    opts = @opts.merge(opts)
+    @result = Result.new(@fields, @protocol, **opts)
   end
 
   # @return [Integer] Thread ID
@@ -409,19 +410,21 @@ class Mysql
   # @return [Mysql::Result] result set of query if return_result is true.
   # @return [true] if return_result is false and result exists.
   # @return [nil] query returns no results.
-  def next_result(return_result: true)
+  def next_result(**opts)
     return nil unless more_results?
+    opts = @opts.merge(opts)
     @protocol.get_result
     @fields = nil
-    return store_result if return_result
+    return store_result(**opts) if opts.fetch(:return_result, true)
     true
   end
 
   # Parse prepared-statement.
   # @param [String] str query string
   # @return [Mysql::Stmt] Prepared-statement object
-  def prepare(str)
-    st = Stmt.new @protocol
+  def prepare(str, **opts)
+    opts = @opts.merge(opts)
+    st = Stmt.new(@protocol, **opts)
     st.prepare str
     st
   end
@@ -429,8 +432,9 @@ class Mysql
   # @private
   # Make empty prepared-statement object.
   # @return [Mysql::Stmt] If block is not specified.
-  def stmt
-    Stmt.new @protocol
+  def stmt(**opts)
+    opts = @opts.merge(opts)
+    Stmt.new(@protocol, **opts)
   end
 
   # Check whether the  connection is available.
