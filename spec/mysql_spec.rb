@@ -637,12 +637,12 @@ describe Mysql do
       assert{ @res.fetch_hash == nil }
     end
 
-    it '#fetch_hash(true) returns with table name' do
-      assert{ @res.fetch_hash(true) == {'t.id'=>1, 't.str'=>'abc'} }
-      assert{ @res.fetch_hash(true) == {'t.id'=>2, 't.str'=>'defg'} }
-      assert{ @res.fetch_hash(true) == {'t.id'=>3, 't.str'=>'hi'} }
-      assert{ @res.fetch_hash(true) == {'t.id'=>4, 't.str'=>nil} }
-      assert{ @res.fetch_hash(true) == nil }
+    it '#fetch_hash(with_table: true) returns with table name' do
+      assert{ @res.fetch_hash(with_table: true) == {'t.id'=>1, 't.str'=>'abc'} }
+      assert{ @res.fetch_hash(with_table: true) == {'t.id'=>2, 't.str'=>'defg'} }
+      assert{ @res.fetch_hash(with_table: true) == {'t.id'=>3, 't.str'=>'hi'} }
+      assert{ @res.fetch_hash(with_table: true) == {'t.id'=>4, 't.str'=>nil} }
+      assert{ @res.fetch_hash(with_table: true) == nil }
     end
 
     it '#num_rows returns number of records' do
@@ -663,9 +663,9 @@ describe Mysql do
       end
     end
 
-    it '#each_hash(true): hash key has table name' do
+    it '#each_hash(with_table: true): hash key has table name' do
       expect = [{"t.id"=>1, "t.str"=>"abc"}, {"t.id"=>2, "t.str"=>"defg"}, {"t.id"=>3, "t.str"=>"hi"}, {"t.id"=>4, "t.str"=>nil}]
-      @res.each_hash(true) do |a|
+      @res.each_hash(with_table: true) do |a|
         assert{ a == expect.shift }
       end
     end

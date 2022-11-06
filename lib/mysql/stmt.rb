@@ -143,8 +143,8 @@ class Mysql
     # The hash key is field name.
     # @param [Boolean] with_table if true, hash key is "table_name.field_name".
     # @return [Hash] record data
-    def fetch_hash(with_table=nil, **opts)
-      @result.fetch_hash(with_table, **opts)
+    def fetch_hash(**opts)
+      @result.fetch_hash(**opts)
     end
 
     # Iterate block with record.
@@ -164,9 +164,9 @@ class Mysql
     # @yield [Hash] record data
     # @return [Mysql::Stmt] self
     # @return [Enumerator] If block is not specified
-    def each_hash(with_table=nil, **opts, &block)
-      return enum_for(:each_hash, with_table, **opts) unless block
-      while (rec = fetch_hash(with_table, **opts))
+    def each_hash(**opts, &block)
+      return enum_for(:each_hash, **opts) unless block
+      while (rec = fetch_hash(**opts))
         block.call rec
       end
       self

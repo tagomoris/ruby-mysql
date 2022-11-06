@@ -58,9 +58,10 @@ class Mysql
     # The hash key is field name.
     # @param [Boolean] with_table if true, hash key is "table_name.field_name".
     # @return [Hash] current record data
-    def fetch_hash(with_table=nil, **opts)
+    def fetch_hash(**opts)
       row = fetch(**opts)
       return nil unless row
+      with_table = @opts.merge(opts).fetch(:with_table, false)
       if with_table and @fieldname_with_table.nil?
         @fieldname_with_table = @fields.map{|f| [f.table, f.name].join(".")}
       end
@@ -88,10 +89,10 @@ class Mysql
     # @param [Boolean] with_table if true, hash key is "table_name.field_name".
     # @yield [Hash] record data
     # @return [self] self. If block is not specified, this returns Enumerator.
-    def each_hash(with_table=nil, **opts, &block)
+    def each_hash(**opts, &block)
       @index = 0
-      return enum_for(:each_hash, with_table, **opts) unless block
-      while (rec = fetch_hash(with_table, **opts))
+      return enum_for(:each_hash, **opts) unless block
+      while (rec = fetch_hash(**opts))
         block.call rec
       end
       self
