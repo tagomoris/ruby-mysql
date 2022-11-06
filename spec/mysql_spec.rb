@@ -693,6 +693,44 @@ describe Mysql do
     end
   end
 
+  describe 'cast is false' do
+    context 'connect:' do
+      it 'not convert type' do
+        m = Mysql.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET, cast: false)
+        assert{ m.query("select 123").entries == [["123"]] }
+      ensure
+        m&.close
+      end
+    end
+
+    context 'query:' do
+      it 'not convert type' do
+        m = Mysql.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
+        assert{ m.query("select 123", cast: false).entries == [["123"]] }
+      ensure
+        m&.close
+      end
+    end
+
+    context 'each:' do
+      it 'not convert type' do
+        m = Mysql.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
+        assert{ m.query("select 123").each(cast: false).entries == [["123"]] }
+      ensure
+        m&.close
+      end
+    end
+
+    context 'fetch:' do
+      it 'not convert type' do
+        m = Mysql.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
+        assert{ m.query("select 123").fetch(cast: false) == ["123"] }
+      ensure
+        m&.close
+      end
+    end
+  end
+
   describe 'Mysql::Result: variable data' do
     before do
       @m = Mysql.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)

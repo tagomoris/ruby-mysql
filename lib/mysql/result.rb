@@ -141,6 +141,13 @@ class Mysql
       retrieve if @opts.merge(opts).fetch(:bulk_retrieve, true)
     end
 
+    def fetch(**opts)
+      rec = super
+      rec = rec.map.with_index{|s, i| convert_type(@fields[i], s)} if rec && @opts.merge(opts).fetch(:cast, true)
+      rec
+    end
+    alias fetch_row fetch
+
     # @private
     # calculate max_length of all fields
     def calculate_field_max_length
@@ -154,6 +161,39 @@ class Mysql
       end
       max_length.each_with_index do |len, i|
         @fields[i].max_length = len
+      end
+    end
+
+    private
+
+    def convert_type(f, s)
+      return nil if s.nil?
+      case f.type
+      when Field::TYPE_STRING, Field::TYPE_VAR_STRING, Field::TYPE_BLOB, Field::TYPE_JSON
+        s
+      when Field::TYPE_NEWDECIMAL
+        s =~ /\./ && s !~ /\.0*\z/ ? BigDecimal(s) : s.to_i
+      when Field::TYPE_TINY, Field::TYPE_SHORT, Field::TYPE_INT24, Field::TYPE_LONG, Field::TYPE_LONGLONG
+        s.to_i
+      when Field::TYPE_FLOAT, Field::TYPE_DOUBLE
+        s.to_f
+      when Field::TYPE_DATE
+        Date.parse(s) rescue nil
+      when Field::TYPE_DATETIME, Field::TYPE_TIMESTAMP
+        Time.parse(s) rescue nil
+      when Field::TYPE_TIME
+        h, m, sec = s.split(/:/)
+        if s =~ /\A-/
+          h.to_i*3600 - m.to_i*60 - sec.to_f
+        else
+          h.to_i*3600 + m.to_i*60 + sec.to_f
+        end
+      when Field::TYPE_YEAR
+        s.to_i
+      when Field::TYPE_BIT
+        s.b
+      else
+        s.b
       end
     end
   end

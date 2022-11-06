@@ -853,43 +853,15 @@ class Mysql
     end
 
     def to_a
-      @fields.map{|f| convert_type(f, @packet.lcs) }
-    end
-
-    private
-
-    def convert_type(f, s)
-      return nil if s.nil?
-      case f.type
-      when Field::TYPE_STRING, Field::TYPE_VAR_STRING, Field::TYPE_BLOB, Field::TYPE_JSON
-        if f.charsetnr == Charset::BINARY_CHARSET_NUMBER
+      @fields.map do |f|
+        s = @packet.lcs
+        if s.nil?
+          nil
+        elsif f.type == Field::TYPE_BIT or f.charsetnr == Charset::BINARY_CHARSET_NUMBER
           s.b
         else
           Charset.convert_encoding(s, @encoding)
         end
-      when Field::TYPE_NEWDECIMAL
-        s =~ /\./ && s !~ /\.0*\z/ ? BigDecimal(s) : s.to_i
-      when Field::TYPE_TINY, Field::TYPE_SHORT, Field::TYPE_INT24, Field::TYPE_LONG, Field::TYPE_LONGLONG
-        s.to_i
-      when Field::TYPE_FLOAT, Field::TYPE_DOUBLE
-        s.to_f
-      when Field::TYPE_DATE
-        Date.parse(s) rescue nil
-      when Field::TYPE_DATETIME, Field::TYPE_TIMESTAMP
-        Time.parse(s) rescue nil
-      when Field::TYPE_TIME
-        h, m, sec = s.split(/:/)
-        if s =~ /\A-/
-          h.to_i*3600 - m.to_i*60 - sec.to_f
-        else
-          h.to_i*3600 + m.to_i*60 + sec.to_f
-        end
-      when Field::TYPE_YEAR
-        s.to_i
-      when Field::TYPE_BIT
-        s.b
-      else
-        s.b
       end
     end
   end
