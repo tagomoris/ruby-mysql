@@ -33,6 +33,11 @@ class Mysql
     def initialize(packet)
       @db, @table, @org_table, @name, @org_name, @charsetnr, @length, @type, @flags, @decimals, @default =
         packet.db, packet.table, packet.org_table, packet.name, packet.org_name, packet.charsetnr, packet.length, packet.type, packet.flags, packet.decimals, packet.default
+      @db.force_encoding('utf-8')
+      @table.force_encoding('utf-8')
+      @org_table.force_encoding('utf-8')
+      @name.force_encoding('utf-8')
+      @org_name.force_encoding('utf-8')
       @flags |= NUM_FLAG if is_num_type?
       @max_length = nil
     end
