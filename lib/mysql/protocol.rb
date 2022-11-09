@@ -229,6 +229,11 @@ class Mysql
       'required'               => 3,
       'verify_ca'              => 4,
       'verify_identity'        => 5,
+      :disabled                => 1,
+      :preferred               => 2,
+      :required                => 3,
+      :verify_ca               => 4,
+      :verify_identity         => 5,
     }.freeze
 
     def enable_ssl
