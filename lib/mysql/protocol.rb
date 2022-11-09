@@ -258,7 +258,7 @@ class Mysql
 
       ssl_socket.connect
       @socket = ssl_socket
-    rescue => e
+    rescue OpenSSL::SSL::SSLError => e
       @client_flags &= ~CLIENT_SSL
       return if @opts[:ssl_mode] < SSL_MODE_REQUIRED
       raise e
