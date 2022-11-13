@@ -128,6 +128,10 @@ class Mysql
       end
     end
     alias quote escape_string
+
+    def default_options
+      @default_options ||= DEFAULT_OPTS.dup
+    end
   end
 
   # @overload initialize(uri, **opts)
@@ -175,7 +179,7 @@ class Mysql
     @sqlstate = "00000"
     @host_info = nil
     @last_error = nil
-    @opts = DEFAULT_OPTS.dup
+    @opts = Mysql.default_options.dup
     parse_args(args, opts)
   end
 
