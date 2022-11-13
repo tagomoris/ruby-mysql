@@ -133,12 +133,12 @@ class Mysql
     # @private
     # @param [Array<Mysql::Field>] fields
     # @param [Mysql::Protocol] protocol
-    # @param [Boolean] bulk_retrieve
+    # @param [Boolean] auto_store_result
     def initialize(fields, protocol=nil, **opts)
       super fields, protocol, RawRecord, **opts
       return unless protocol
       fields.each{|f| f.result = self}  # for calculating max_field
-      retrieve if @opts.merge(opts)[:bulk_retrieve]
+      retrieve if @opts.merge(opts)[:auto_store_result]
     end
 
     def fetch(**opts)
@@ -206,7 +206,7 @@ class Mysql
     # @param [Mysql::Protocol] protocol
     def initialize(fields, protocol, **opts)
       super fields, protocol, StmtRawRecord, **opts
-      retrieve if @opts.merge(opts)[:bulk_retrieve]
+      retrieve if @opts.merge(opts)[:auto_store_result]
     end
   end
 end

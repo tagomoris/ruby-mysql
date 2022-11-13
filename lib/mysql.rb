@@ -66,7 +66,7 @@ class Mysql
   #   @return [Boolean]
   # @!attribute [rw] with_table
   #   @return [Boolean]
-  # @!attribute [rw] bulk_retrieve
+  # @!attribute [rw] auto_store_result
   #   @return [Boolean]
   # @!attribute [rw] cast
   #   @return [Boolean]
@@ -92,7 +92,7 @@ class Mysql
     yield_null_result: true,
     return_result: true,
     with_table: false,
-    bulk_retrieve: true,
+    auto_store_result: true,
     cast: true,
   }.freeze
 
