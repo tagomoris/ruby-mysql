@@ -61,7 +61,7 @@ class Mysql
     # Execute prepared statement.
     # @param [Object] values values passed to query
     # @return [Mysql::Result] if return_result is true and the query returns result set.
-    # @return [nil] if return_results is true and the query does not return result set.
+    # @return [nil] if return_result is true and the query does not return result set.
     # @return [self] if return_result is false or block is specified.
     def execute(*values, **opts, &block)
       raise ClientError, "Invalid statement handle" unless @statement_id
@@ -77,13 +77,13 @@ class Mysql
           while true
             get_result
             res = store_result(**opts)
-            block.call res if res || opts.fetch(:yield_null_result, true)
+            block.call res if res || opts[:yield_null_result]
             break unless more_results?
           end
           return self
         end
         get_result
-        return self unless opts.fetch(:return_result, true)
+        return self unless opts[:return_result]
         return store_result(**opts)
       rescue ServerError => e
         @last_error = e
@@ -118,7 +118,7 @@ class Mysql
       opts = @opts.merge(opts)
       @fields = @result = nil
       get_result
-      return self unless opts.fetch(:return_result, true)
+      return self unless opts[:return_result]
       return store_result(**opts)
     rescue ServerError => e
       @last_error = e

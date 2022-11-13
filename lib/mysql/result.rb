@@ -61,7 +61,7 @@ class Mysql
     def fetch_hash(**opts)
       row = fetch(**opts)
       return nil unless row
-      with_table = @opts.merge(opts).fetch(:with_table, false)
+      with_table = @opts.merge(opts)[:with_table]
       if with_table and @fieldname_with_table.nil?
         @fieldname_with_table = @fields.map{|f| [f.table, f.name].join(".")}
       end
@@ -138,12 +138,12 @@ class Mysql
       super fields, protocol, RawRecord, **opts
       return unless protocol
       fields.each{|f| f.result = self}  # for calculating max_field
-      retrieve if @opts.merge(opts).fetch(:bulk_retrieve, true)
+      retrieve if @opts.merge(opts)[:bulk_retrieve]
     end
 
     def fetch(**opts)
       rec = super
-      rec = rec.map.with_index{|s, i| convert_type(@fields[i], s)} if rec && @opts.merge(opts).fetch(:cast, true)
+      rec = rec.map.with_index{|s, i| convert_type(@fields[i], s)} if rec && @opts.merge(opts)[:cast]
       rec
     end
     alias fetch_row fetch
@@ -206,7 +206,7 @@ class Mysql
     # @param [Mysql::Protocol] protocol
     def initialize(fields, protocol, **opts)
       super fields, protocol, StmtRawRecord, **opts
-      retrieve if @opts.merge(opts).fetch(:bulk_retrieve, true)
+      retrieve if @opts.merge(opts)[:bulk_retrieve]
     end
   end
 end

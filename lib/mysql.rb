@@ -60,6 +60,16 @@ class Mysql
   #   @return [Boolean]
   # @!attribute [rw] connect_attrs
   #   @return [Hash]
+  # @!attribute [rw] yield_null_result
+  #   @return [Boolean]
+  # @!attribute [rw] return_result
+  #   @return [Boolean]
+  # @!attribute [rw] with_table
+  #   @return [Boolean]
+  # @!attribute [rw] bulk_retrieve
+  #   @return [Boolean]
+  # @!attribute [rw] cast
+  #   @return [Boolean]
   DEFAULT_OPTS = {
     host: nil,
     username: nil,
@@ -79,6 +89,11 @@ class Mysql
     ssl_context_params: {},
     get_server_public_key: false,
     connect_attrs: {},
+    yield_null_result: true,
+    return_result: true,
+    with_table: false,
+    bulk_retrieve: true,
+    cast: true,
   }.freeze
 
   # @private
@@ -346,7 +361,7 @@ class Mysql
   # @param return_result [Boolean]
   # @param yield_null_result [Boolean]
   # @return [Mysql::Result] if return_result is true and the query returns result set.
-  # @return [nil] if return_results is true and the query does not return result set.
+  # @return [nil] if return_result is true and the query does not return result set.
   # @return [self] if return_result is false or block is specified.
   # @example
   #  my.query("select 1,NULL,'abc'").fetch  # => [1, nil, "abc"]
@@ -361,13 +376,13 @@ class Mysql
         while true
           @protocol.get_result
           res = store_result(**opts)
-          block.call res if res || opts.fetch(:yield_null_result, true)
+          block.call res if res || opts[:yield_null_result]
           break unless more_results?
         end
         return self
       end
       @protocol.get_result
-      return self unless opts.fetch(:return_result, true)
+      return self unless opts[:return_result]
       return store_result(**opts)
     rescue ServerError => e
       @last_error = e
@@ -415,7 +430,7 @@ class Mysql
     opts = @opts.merge(opts)
     @protocol.get_result
     @fields = nil
-    return store_result(**opts) if opts.fetch(:return_result, true)
+    return store_result(**opts) if opts[:return_result]
     true
   end
 
