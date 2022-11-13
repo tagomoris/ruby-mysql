@@ -1,7 +1,12 @@
-## [3.1.0] - 2022-06-27
+## [4.0.0] - 2022-11-09
 
 ### Incompatible changes
 
+- unsupport MySQL 5.5 and Ruby 2.5
+- `Mysql::Result#fetch` returns converted values unless `cast` is false
+- `Mysql::Result#each` always returns records from the beginning
+- Retrieving a DECIMAL type with a prepared statement returns a `BigDecimal` object instead of `String`
+- Retrieving a DATE type value with a prepared statement returns a `Date` object instead of `Time`
 - delete `Mysql#more_results`. use `#more_results?` instead.
 - remove `Mysql::Result#fetch_field`, `#field_tell`, `#field_seek`, `#fetch_field_direct`, `#fetch_lengths`, `#num_fields`.
 - error 'command out of sync' is `Mysql::ClientError::CommandOutOfSync` instead of `RuntimeError`.
@@ -9,6 +14,7 @@
 
 ### Features
 
+- `Mysql.default_options` is global options.
 - `Mysql#connect` option `ssl_mode`: support `SSL_MODE_VERIFY_CA`, `SSL_MODE_VERIFY_IDENTITY`.
 - `Mysql#connect` option `ssl_context_params`: see `OpenSSL::SSL::SSLContext#set_params`.
 - `Mysql#connect` option `connect_attrs`.
@@ -17,7 +23,8 @@
 - `Mysql#query` and `Mysql::Stmt#execute` option: `return_result` and `yield_null_result`.
 - support session tracking. See https://dev.mysql.com/doc/refman/8.0/en/session-state-tracking.html
 - thread safe.
-- `Mysql#query` option: `bulk_retrieve`.
+- `Mysql#query`, `Mysql::Stmt#execute` option: `auto_store_result`.
+- add `Mysql::Result#server_status`
 
 ### Fixes
 
@@ -26,6 +33,20 @@
 - `Mysql#server_version` don't require connection.
 - use `connect_timeout` instead of `read/write_timeout` on initial negotiation.
 - enable to changing `local_infile` for established connection.
+- `Mysql.connect` with host nil ignores parameters
+- raises `IOError` after `Mysql#close`
+- Fractional seconds of time types were ignored when retrieving values using prepared statements
+- `Mysql::Stmt#execute` allows true or false values.
+
+### Others
+
+- Mysql#prpare raises Mysql::ClientError if the connection is not connected.
+- using rubocop
+- migrate from GitHub to GitLab
+- ignore Gemfile.lock
+- use rspec instead of test-unit
+- using connection parameter from spec/config.rb for testing
+- split files
 
 ## [3.0.1] - 2022-06-18
 
