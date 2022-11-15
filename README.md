@@ -61,7 +61,7 @@ pp my.query('select 123,123.45,now(),cast(now() as date)').fetch.map{[_1, _1.cla
 #    [#<Date: 2022-11-15 ((2459899j,0s,0n),+0s,2299161j)>, Date]]
 ```
 
-To specif `cast: false`, you get the same behavior as in 3.0.
+To specify `cast: false`, you get the same behavior as in 3.0.
 ```ruby
 my.query('select 123,123.45,now(),cast(now() as date)', cast: false).fetch.map{[_1, _1.class]}
 #=> [["123", String],
