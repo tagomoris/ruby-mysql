@@ -17,9 +17,10 @@ jobs:
         ports:
           - 3306:3306
         env:
-          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          # MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_ROOT_PASSWORD: 'secret'
           MYSQL_DATABASE: test_for_mysql_ruby
-          MYSQL_PASSWORD: ''
+          MYSQL_PASSWORD: 'secret'
         options: --health-cmd "mysqladmin ping"
     steps:
       - uses: actions/checkout@v3
