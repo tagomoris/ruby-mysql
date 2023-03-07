@@ -1059,6 +1059,17 @@ describe Mysql do
         assert{ res.entries == [['123'], ['{"a": 1, "b": 2, "c": 3}'], ['[1, 2, 3]']] }
       end
     end
+
+    it '#fetch geometry column' do
+      if @m.server_version >= 80003
+        @m.query "create temporary table t (i point SRID 4326)"
+        @m.query "insert into t values (ST_PointFromtext('POINT(35.0 135.0)', 4326))"
+        res = @m.query 'select i from t'
+        str = "\xE6\x10\x00\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\xE0\x60\x40\x00\x00\x00\x00\x00\x80\x41\x40"
+        str.force_encoding('ASCII-8BIT')
+        assert{ res.entries == [[str]] }
+      end
+    end
   end
 
   describe 'Mysql::Field' do
@@ -1263,6 +1274,17 @@ describe Mysql do
       @s.prepare 'insert into t values (?,?,?)'
       @s.execute 123, 'hoge', Time.local(2009, 12, 8, 19, 56, 21)
       assert{ @m.query('select * from t').fetch_row == [123, 'hoge', Time.local(2009, 12, 8, 19, 56, 21)] }
+    end
+
+    it '#execute with geometry argument' do
+      if @m.server_version >= 80003
+        @m.query 'create temporary table t (i point SRID 4326)'
+        @s.prepare "insert into t values (?)"
+        str = "\xE6\x10\x00\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\xE0\x60\x40\x00\x00\x00\x00\x00\x80\x41\x40"
+        str.force_encoding('ASCII-8BIT')
+        @s.execute str
+        assert{ @m.query('select i from t').fetch_row == [str] }
+      end
     end
 
     it '#execute with arguments that is invalid count raise error' do
@@ -1725,6 +1747,18 @@ describe Mysql do
         @s.prepare 'select i from t'
         @s.execute
         assert{ @s.entries == [['123'], ['{"a": 1, "b": 2, "c": 3}'], ['[1, 2, 3]']] }
+      end
+    end
+
+    it '#fetch geometry column' do
+      if @m.server_version >= 80003
+        @m.query "create temporary table t (i point SRID 4326)"
+        @m.query "insert into t values (ST_PointFromtext('POINT(35.0 135.0)', 4326))"
+        @s.prepare 'select i from t'
+        @s.execute
+        str = "\xE6\x10\x00\x00\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\xE0\x60\x40\x00\x00\x00\x00\x00\x80\x41\x40"
+        str.force_encoding('ASCII-8BIT')
+        assert{ @s.entries == [[str]] }
       end
     end
 
