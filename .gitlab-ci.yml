@@ -15,7 +15,7 @@ test:
     - MYSQL_SERVER=mysql MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD= bundle exec rspec
 
 rubocop:
-  image: ruby:3.1
+  image: ruby:3.2
   script:
     - bundle install
     - bundle exec rubocop
