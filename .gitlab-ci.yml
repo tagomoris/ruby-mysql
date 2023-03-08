@@ -11,6 +11,7 @@ test:
     MYSQL_DATABASE: 'test_for_mysql_ruby'
   image: ruby:$RUBY_VER
   script:
+    - gem install bundler:$(grep -A2 'BUNDLED WITH' Gemfile.lock  | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+')
     - bundle install
     - MYSQL_SERVER=mysql MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD= bundle exec rspec
 
