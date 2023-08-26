@@ -1,6 +1,7 @@
 require 'rspec'
 require 'power_assert'
 require 'mysql'
+require 'fileutils'
 
 class RSpec::Core::ExampleGroup  # rubocop:disable Style/ClassAndModuleChildren
   def assert(&block)

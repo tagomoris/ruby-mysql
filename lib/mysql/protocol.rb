@@ -172,7 +172,9 @@ class Mysql
       set_state :INIT
       @get_server_public_key = @opts[:get_server_public_key]
       begin
-        if @opts[:host].nil? or @opts[:host].empty? or @opts[:host] == "localhost"
+        if @opts[:io]
+          @socket = @opts[:io]
+        elsif @opts[:host].nil? or @opts[:host].empty? or @opts[:host] == "localhost"
           socket = @opts[:socket] || ENV["MYSQL_UNIX_PORT"] || MYSQL_UNIX_PORT
           @socket = Socket.unix(socket)
         else
