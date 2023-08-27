@@ -185,7 +185,7 @@ class Mysql
     end
 
     def close
-      @socket.close
+      @socket.close rescue nil
     end
 
     # initial negotiate and authenticate.

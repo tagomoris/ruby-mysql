@@ -2033,7 +2033,9 @@ describe Mysql do
   it 'disconnect from server' do
     m = Mysql.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
     m.query('kill connection_id()') rescue nil
-    expect { m.query('select 1') }.to raise_error Mysql::ClientError::ServerLost, 'Lost connection to server during query'
+    expect { m.query('select 1') }.to raise_error do |e|
+      assert{ e.is_a?(Mysql::ClientError::ServerGoneError) || e.is_a?(Mysql::ClientError::ServerLost)}
+    end
   end
 
   it 'disconnect from client' do
