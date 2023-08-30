@@ -78,6 +78,7 @@ class Mysql
     port: nil,
     socket: nil,
     flags: 0,
+    io: nil,
     charset: nil,
     connect_timeout: nil,
     read_timeout: nil,
