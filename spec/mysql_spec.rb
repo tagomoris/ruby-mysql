@@ -2,7 +2,7 @@ require 'spec_helper'
 
 describe Mysql do
   it 'Mysql::VERSION returns client version' do
-    assert{ Mysql::VERSION == '4.0.0' }
+    assert{ Mysql::VERSION == '4.1.0' }
   end
 
   it 'Mysql.new returns Mysql object' do

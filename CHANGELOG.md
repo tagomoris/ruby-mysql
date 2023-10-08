@@ -1,3 +1,10 @@
+## [4.1.0] - 2023-10-08
+
+- Support geometry column <https://gitlab.com/tmtms/ruby-mysql/-/merge_requests/1>
+- FIX: If the server is localhost and disconnect the connection, Errno::EPIPE is raised <https://gitlab.com/tmtms/ruby-mysql/-/merge_requests/3> <https://gitlab.com/tmtms/ruby-mysql/-/issues/1>
+- Allow for existing socket when connecting <https://gitlab.com/tmtms/ruby-mysql/-/merge_requests/2> <https://gitlab.com/tmtms/ruby-mysql/-/merge_requests/5>
+  - add `io` keyword parameter
+
 ## [4.0.0] - 2022-11-09
 
 ### Incompatible changes
