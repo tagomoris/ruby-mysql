@@ -160,6 +160,7 @@ class Mysql
     # @option :ssl_mode [Integer]
     # @option :ssl_context_params [Hash<:Symbol, String>]
     # @option :get_server_public_key [Boolean]
+    # @option :io [BasicSocket, OpenSSL::SSL::SSLSocket] Existing socket instance that will be used instead of creating a new socket
     # @raise [ClientError] connection timeout
     def initialize(opts)
       @mutex = Mutex.new

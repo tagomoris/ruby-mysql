@@ -40,6 +40,8 @@ class Mysql
   #   @return [String, nil] socket filename
   # @!attribute [rw] flags
   #   @return [Integer, nil]
+  # @!attribute [rw] io
+  #   @return [[BasicSocket, OpenSSL::SSL::SSLSocket], nil]
   # @!attribute [rw] connect_timeout
   #   @return [Numeric, nil]
   # @!attribute [rw] read_timeout
@@ -173,6 +175,7 @@ class Mysql
   #   @option opts :ssl_context_params [Hash<Symbol, String>]
   #   @option opts :get_server_public_key [Boolean]
   #   @option opts :connect_attrs [Hash]
+  #   @option opts :io [BasicSocket, OpenSSL::SSL::SSLSocket] Existing socket instance that will be used instead of creating a new socket
   def initialize(*args, **opts)
     @fields = nil
     @result = nil
