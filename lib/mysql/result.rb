@@ -185,7 +185,7 @@ class Mysql
       when Field::TYPE_DATETIME, Field::TYPE_TIMESTAMP
         Time.parse(s) rescue nil
       when Field::TYPE_TIME
-        h, m, sec = s.split(/:/)
+        h, m, sec = s.split(':')
         if s =~ /\A-/
           h.to_i*3600 - m.to_i*60 - sec.to_f
         else
