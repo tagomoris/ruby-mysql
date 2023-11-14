@@ -21,6 +21,7 @@ class Mysql
       @protocol = protocol
       @record_class = record_class
       @opts = opts
+      @auto_store_result = @opts[:auto_store_result]
     end
 
     def retrieve
@@ -48,8 +49,10 @@ class Mysql
       end
       rec = @protocol.retr_record(@record_class)&.to_a
       return nil unless rec
-      @records[@index] = rec
-      @index += 1
+      if @auto_store_result
+        @records[@index] = rec
+        @index += 1
+      end
       return rec
     end
     alias fetch_row fetch
@@ -138,7 +141,7 @@ class Mysql
       super fields, protocol, RawRecord, **opts
       return unless protocol
       fields.each{|f| f.result = self}  # for calculating max_field
-      retrieve if @opts.merge(opts)[:auto_store_result]
+      retrieve if @auto_store_result
     end
 
     def fetch(**opts)
@@ -206,7 +209,7 @@ class Mysql
     # @param [Mysql::Protocol] protocol
     def initialize(fields, protocol, **opts)
       super fields, protocol, StmtRawRecord, **opts
-      retrieve if @opts.merge(opts)[:auto_store_result]
+      retrieve if @auto_store_result
     end
   end
 end

@@ -216,6 +216,34 @@ describe Mysql do
           @m.query('select @@character_set_connection').fetch_row == ['utf8']
       end
     end
+    it 'auto_store_result: retrieves all records at first and results are repeatable if true' do
+      @m.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
+      @m.query 'create temporary table t (id int)'
+      @m.query 'insert into t values (1),(2),(3),(4),(5)'
+      res = @m.query('select id from t limit 4', auto_store_result: true)
+      ary = []
+      3.times do
+        ary << res.fetch_row
+      end
+      assert{ ary == [[1], [2], [3]] }
+      assert{ res.size == 4 }
+      assert{ res.entries == [[1], [2], [3], [4]] }
+      assert{ res.entries == [[1], [2], [3], [4]] }
+    end
+    it 'auto_store_result: skip storing records for repeatable result if false' do
+      @m.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
+      @m.query 'create temporary table t (id int)'
+      @m.query 'insert into t values (1),(2),(3),(4),(5)'
+      res = @m.query('select id from t limit 4', auto_store_result: false)
+      ary = []
+      3.times do
+        ary << res.fetch_row
+      end
+      assert{ ary == [[1], [2], [3]] }
+      assert{ res.size == 0 }
+      assert{ res.entries == [[4]] }
+      assert{ res.entries == [] }
+    end
   end
 
   describe 'Mysql' do

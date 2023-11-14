@@ -173,3 +173,6 @@ Style/StringLiteralsInInterpolation:
 Style/WordArray:
   Enabled: false
 
+Style/ZeroLengthPredicate:
+  Exclude:
+    - 'spec/**/*'
