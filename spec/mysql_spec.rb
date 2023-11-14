@@ -217,32 +217,32 @@ describe Mysql do
       end
     end
     it 'auto_store_result: retrieves all records at first and results are repeatable if true' do
+      @m.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
       @m.query 'create temporary table t (id int)'
       @m.query 'insert into t values (1),(2),(3),(4),(5)'
       res = @m.query('select id from t limit 4', auto_store_result: true)
+      ary = []
+      3.times do
+        ary << res.fetch_row
+      end
+      assert{ ary == [[1], [2], [3]] }
       assert{ res.size == 4 }
-      ary1 = []
-      4.times do
-        ary1 << res.fetch_row
-      end
-      assert{ ary1 == [[1],[2],[3],[4]] }
-      ary2 = []
-      res.each do |id|
-        ary2 << [id]
-      end
+      assert{ res.entries == [[1], [2], [3], [4]] }
+      assert{ res.entries == [[1], [2], [3], [4]] }
     end
     it 'auto_store_result: skip storing records for repeatable result if false' do
+      @m.connect(MYSQL_SERVER, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE, MYSQL_PORT, MYSQL_SOCKET)
       @m.query 'create temporary table t (id int)'
       @m.query 'insert into t values (1),(2),(3),(4),(5)'
       res = @m.query('select id from t limit 4', auto_store_result: false)
-      assert{ res.num_rows == 0 }
       ary = []
-      res.each do |id|
-        ary << [id]
+      3.times do
+        ary << res.fetch_row
       end
-      assert{ ary == [[1],[2],[3],[4]] }
-      assert{ res.num_rows == 0 }
-      assert{ res.retrieve == [] }
+      assert{ ary == [[1], [2], [3]] }
+      assert{ res.size == 0 }
+      assert{ res.entries == [[4]] }
+      assert{ res.entries == [] }
     end
   end
 
