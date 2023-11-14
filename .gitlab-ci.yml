@@ -14,9 +14,13 @@ test:
     - gem install bundler:$(grep -A2 'BUNDLED WITH' Gemfile.lock  | grep -E -o '[0-9]+\.[0-9]+\.[0-9]+')
     - bundle install
     - MYSQL_SERVER=mysql MYSQL_PORT=3306 MYSQL_USER=root MYSQL_PASSWORD= bundle exec rspec
+  rules:
+    - if: ($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
 
 rubocop:
   image: ruby:3.2
   script:
     - bundle install
     - bundle exec rubocop
+  rules:
+    - if: ($CI_PIPELINE_SOURCE == "merge_request_event" || $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH)
